@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Advanced Auth UI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="layout">
+    <aside class="visual" aria-hidden="false">
+        <div class="visual-inner">
+            <h2>Join the community</h2>
+            <p>Secure access, beautiful design — get started in seconds.</p>
+
+            <!-- simple illustrative SVG -->
+            <svg width="320" height="220" viewBox="0 0 320 220" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                    <linearGradient id="g1" x1="0" x2="1">
+                        <stop offset="0" stop-color="#60a5fa" />
+                        <stop offset="1" stop-color="#7c3aed" />
+                    </linearGradient>
+                </defs>
+                <rect x="16" y="16" width="120" height="188" rx="18" fill="#071029" stroke="url(#g1)" stroke-width="2" />
+                <rect x="200" y="22" width="100" height="140" rx="12" fill="#071029" stroke="url(#g1)" stroke-width="2" />
+                <circle cx="70" cy="70" r="18" fill="#1e293b" stroke="#2b394b" />
+                <rect x="40" y="110" width="60" height="10" rx="4" fill="#0f1724" />
+                <rect x="40" y="130" width="80" height="8" rx="4" fill="#0f1724" />
+                <rect x="208" y="38" width="76" height="10" rx="4" fill="#0f1724" />
+                <rect x="208" y="58" width="60" height="8" rx="4" fill="#0f1724" />
+                <g opacity="0.9">
+                    <rect x="32" y="28" width="56" height="8" rx="3" fill="url(#g1)"/>
+                    <rect x="216" y="24" width="44" height="6" rx="3" fill="url(#g1)"/>
+                </g>
+            </svg>
+        </div>
+    </aside>
+
+    <div class="auth-container">
+
+    <div class="form-box" role="main" aria-labelledby="authTitle">
+        <div class="brand">
+            <div class="logo">SC</div>
+            <h1 id="authTitle">SecureSign</h1>
+        </div>
+
+        <div class="toggle-buttons" role="tablist" aria-label="Authentication Tabs">
+            <button id="loginTab" class="active" role="tab" aria-selected="true" onclick="switchForm('login')">Login</button>
+            <button id="signupTab" role="tab" aria-selected="false" onclick="switchForm('signup')">Sign up</button>
+        </div>
+
+        <!-- LOGIN -->
+        <form id="loginForm" class="form active" autocomplete="on" novalidate>
+            <h2>Welcome Back</h2>
+
+            <div class="input-group">
+                <input type="email" id="loginEmail" required aria-label="Email" />
+                <label for="loginEmail">Email</label>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="loginPassword" required aria-label="Password" />
+                <label for="loginPassword">Password</label>
+                <button type="button" class="icon-btn toggle-pass" aria-label="Show password" onclick="togglePassword('loginPassword', this)">👁️</button>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <div class="row">
+                <label class="remember"><input type="checkbox" id="remember"> Remember me</label>
+                <button type="button" class="link" onclick="openForgot()">Forgot?</button>
+            </div>
+
+            <button type="button" class="primary" onclick="validateLogin()">Login</button>
+
+            <div class="divider"><span>or continue with</span></div>
+            <div class="socials">
+                <button class="social" aria-label="Continue with Google">G</button>
+                <button class="social" aria-label="Continue with GitHub">GH</button>
+            </div>
+        </form>
+
+        <!-- SIGNUP -->
+        <form id="signupForm" class="form" autocomplete="on" novalidate>
+            <h2>Create Account</h2>
+
+            <div class="input-group">
+                <input type="text" id="signupName" required aria-label="Full name" />
+                <label for="signupName">Full Name</label>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <div class="input-group">
+                <input type="email" id="signupEmail" required aria-label="Email" />
+                <label for="signupEmail">Email</label>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="signupPassword" required oninput="checkStrength()" aria-label="Password" />
+                <label for="signupPassword">Password</label>
+                <button type="button" class="icon-btn toggle-pass" aria-label="Show password" onclick="togglePassword('signupPassword', this)">👁️</button>
+                <div class="strength-meter" aria-hidden="true">
+                    <div id="strengthBar"></div>
+                </div>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="confirmPassword" required aria-label="Confirm password" />
+                <label for="confirmPassword">Confirm Password</label>
+                <small class="error" aria-live="polite"></small>
+            </div>
+
+            <button type="button" class="primary" onclick="validateSignup()">Signup</button>
+
+            <div class="note">By signing up you agree to our <a href="#">terms</a>.</div>
+        </form>
+
+    </div>
+
+</div>
+
+<!-- Forgot password modal -->
+<div id="forgotModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+        <h3 id="forgotTitle">Reset password</h3>
+        <p>Enter your email and we'll send reset instructions.</p>
+        <div class="input-group">
+            <input type="email" id="forgotEmail">
+            <label for="forgotEmail">Email</label>
+            <small class="error"></small>
+        </div>
+        <div class="modal-actions">
+            <button type="button" onclick="closeForgot()">Cancel</button>
+            <button type="button" class="primary" onclick="sendReset()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- success overlay -->
+<div id="successOverlay" class="success-overlay" aria-hidden="true">
+    <div class="check">✓</div>
+    <p id="successMsg">Success</p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

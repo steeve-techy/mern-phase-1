@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Weather Info</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0d0d0d;
+      font-family: Georgia, serif;
+      transition: background 0.6s ease;
+      color: #fff;
+    }
+
+    header {
+      padding: 32px 40px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .header-sub {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 6px;
+    }
+    .header-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(28px, 5vw, 48px);
+      font-weight: 900;
+    }
+    .unit-btns { display: flex; gap: 8px; }
+    .unit-btn {
+      cursor: pointer;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.2);
+      font-family: 'Source Code Pro', monospace;
+      font-size: 13px;
+      background: transparent;
+      color: #fff;
+      transition: all 0.2s;
+    }
+    .unit-btn.active {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.4);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      padding: 32px 40px;
+    }
+    .card {
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.04);
+      transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .card:hover {
+      transform: translateY(-6px) scale(1.02);
+      border-color: rgba(255,255,255,0.25);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .card.active {
+      border-color: rgba(255,255,255,0.4);
+      box-shadow: 0 0 0 2px rgba(255,255,255,0.15);
+    }
+    .card-bar { height: 5px; }
+    .card-body { padding: 20px 22px 22px; }
+    .card-top { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .card-city { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+    .card-country { font-family: 'Source Code Pro', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .card-icon { font-size: 32px; }
+    .card-temp { font-family: 'Source Code Pro', monospace; font-size: 42px; font-weight: 600; margin-bottom: 6px; }
+    .card-condition { font-family: 'Source Code Pro', monospace; font-size: 12px; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+    .card-hilo { margin-top: 10px; display: flex; gap: 10px; font-family: 'Source Code Pro', monospace; font-size: 11px; color: rgba(255,255,255,0.4); }
+
+    .panel {
+      margin: 0 40px 40px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow: hidden;
+      display: none;
+      animation: slideIn 0.4s cubic-bezier(0.34,1.3,0.64,1);
+    }
+    .panel.show { display: block; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .panel-header {
+      padding: 28px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+    .panel-country { font-family: 'Source Code Pro', monospace; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+    .panel-city { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 700; }
+    .panel-icon { font-size: 64px; }
+    .panel-body { padding: 28px 36px; }
+    .panel-main { display: flex; gap: 40px; flex-wrap: wrap; align-items: flex-start; margin-bottom: 28px; }
+    .big-temp { font-family: 'Playfair Display', serif; font-weight: 900; font-size: clamp(64px, 10vw, 110px); line-height: 1; letter-spacing: -4px; }
+    .feels-like { font-family: 'Source Code Pro', monospace; font-size: 13px; color: rgba(255,255,255,0.45); margin-top: 6px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; min-width: 220px; }
+    .stat-box { background: rgba(255,255,255,0.06); border-radius: 14px; padding: 14px 18px; border: 1px solid rgba(255,255,255,0.07); }
+    .stat-icon { font-size: 18px; margin-bottom: 6px; }
+    .stat-value { font-family: 'Source Code Pro', monospace; font-size: 18px; font-weight: 600; }
+    .stat-label { font-family: 'Source Code Pro', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .forecast-title { font-family: 'Source Code Pro', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 12px; }
+    .forecast-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+    .forecast-chip { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 14px; text-align: center; border: 1px solid rgba(255,255,255,0.07); }
+    .fc-day  { font-family: 'Source Code Pro', monospace; font-size: 11px; color: rgba(255,255,255,0.45); margin-bottom: 8px; letter-spacing: 1px; }
+    .fc-icon { font-size: 24px; margin-bottom: 8px; }
+    .fc-high { font-family: 'Source Code Pro', monospace; font-size: 13px; }
+    .fc-low  { font-family: 'Source Code Pro', monospace; font-size: 11px; color: rgba(255,255,255,0.35); }
+
+    .hint {
+      text-align: center;
+      padding: 0 0 48px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 13px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 2px;
+    }
+
+    @media (max-width: 600px) {
+      header, .grid, .panel-body, .panel-header { padding-left: 16px; padding-right: 16px; }
+      .panel { margin-left: 16px; margin-right: 16px; }
+      .forecast-grid { grid-template-columns: repeat(2,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <div class="header-sub">Global Weather Monitor</div>
+      <div class="header-title">Today's Conditions</div>
+    </div>
+    <div class="unit-btns">
+      <button class="unit-btn active" onclick="setUnit('C')">°C</button>
+      <button class="unit-btn"        onclick="setUnit('F')">°F</button>
+    </div>
+  </header>
+
+  <div class="grid" id="cardGrid"></div>
+
+  <div class="panel" id="detailPanel">
+    <div class="panel-header" id="panelHeader">
+      <div>
+        <div class="panel-country" id="panelCountry"></div>
+        <div class="panel-city"    id="panelCity"></div>
+      </div>
+      <div class="panel-icon" id="panelIcon"></div>
+    </div>
+    <div class="panel-body">
+      <div class="panel-main">
+        <div>
+          <div class="big-temp"   id="panelTemp"></div>
+          <div class="feels-like" id="panelFeels"></div>
+        </div>
+        <div class="stats-grid" id="statsGrid"></div>
+      </div>
+      <div class="forecast-title">4-Day Forecast</div>
+      <div class="forecast-grid" id="forecastGrid"></div>
+    </div>
+  </div>
+
+  <div class="hint" id="hint">↑ SELECT A CITY TO EXPAND DETAILS</div>
+
+  <script>
+    const cities = [
+      {
+        city:"Tokyo", country:"JP", temp:12, feels:9,
+        humidity:68, wind:14, condition:"Cloudy", icon:"☁️", high:15, low:8,
+        forecast:[
+          {day:"Tue",icon:"🌧️",high:13,low:7},
+          {day:"Wed",icon:"🌦️",high:16,low:9},
+          {day:"Thu",icon:"⛅", high:18,low:10},
+          {day:"Fri",icon:"☀️", high:21,low:12},
+        ]
+      },
+      {
+        city:"Nairobi", country:"KE", temp:27, feels:30,
+        humidity:52, wind:9, condition:"Sunny", icon:"☀️", high:29, low:18,
+        forecast:[
+          {day:"Tue",icon:"☀️", high:28,low:17},
+          {day:"Wed",icon:"⛅", high:26,low:16},
+          {day:"Thu",icon:"🌧️",high:22,low:15},
+          {day:"Fri",icon:"🌦️",high:25,low:16},
+        ]
+      },
+      {
+        city:"Oslo", country:"NO", temp:-3, feels:-8,
+        humidity:85, wind:21, condition:"Snowy", icon:"❄️", high:0, low:-6,
+        forecast:[
+          {day:"Tue",icon:"🌨️",high:-1,low:-5},
+          {day:"Wed",icon:"❄️", high:-2,low:-7},
+          {day:"Thu",icon:"☁️", high:1, low:-3},
+          {day:"Fri",icon:"⛅", high:3, low:-1},
+        ]
+      },
+      {
+        city:"Sydney", country:"AU", temp:24, feels:26,
+        humidity:61, wind:17, condition:"Partly Cloudy", icon:"⛅", high:27, low:19,
+        forecast:[
+          {day:"Tue",icon:"☀️", high:28,low:20},
+          {day:"Wed",icon:"☀️", high:30,low:21},
+          {day:"Thu",icon:"⛅", high:26,low:18},
+          {day:"Fri",icon:"🌧️",high:22,low:17},
+        ]
+      },
+      {
+        city:"Reykjavik", country:"IS", temp:4, feels:-1,
+        humidity:78, wind:35, condition:"Stormy", icon:"⛈️", high:6, low:1,
+        forecast:[
+          {day:"Tue",icon:"🌧️",high:5,low:0},
+          {day:"Wed",icon:"☁️", high:7,low:2},
+          {day:"Thu",icon:"⛅", high:8,low:3},
+          {day:"Fri",icon:"🌦️",high:6,low:1},
+        ]
+      },
+    ];
+
+    const gradients = {
+      "Sunny":         "linear-gradient(135deg,#f97316,#fbbf24,#fde68a)",
+      "Cloudy":        "linear-gradient(135deg,#475569,#64748b,#94a3b8)",
+      "Snowy":         "linear-gradient(135deg,#1e3a5f,#2563eb,#93c5fd)",
+      "Partly Cloudy": "linear-gradient(135deg,#0369a1,#0ea5e9,#7dd3fc)",
+      "Stormy":        "linear-gradient(135deg,#1e1b4b,#4c1d95,#7c3aed)",
+    };
+
+    function tempTheme(t) {
+      if (t <= 0)  return { bg:"#0f172a", text:"#e0f2fe" };
+      if (t <= 10) return { bg:"#0c1a2e", text:"#dbeafe" };
+      if (t <= 20) return { bg:"#0f2027", text:"#d1fae5" };
+      if (t <= 28) return { bg:"#1c1206", text:"#fef3c7" };
+      return              { bg:"#1f0a0a", text:"#ffedd5" };
+    }
+
+    let unit = "C";
+    let selected = null;
+
+    function fmt(c) {
+      return unit === "C" ? `${c}°` : `${Math.round(c * 9/5 + 32)}°`;
+    }
+
+    function setUnit(u) {
+      unit = u;
+      document.querySelectorAll('.unit-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.includes(u));
+      });
+      renderCards();
+      if (selected !== null) renderPanel(selected);
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('cardGrid');
+      grid.innerHTML = '';
+      cities.forEach((w, i) => {
+        const card = document.createElement('div');
+        card.className = 'card' + (selected === i ? ' active' : '');
+        card.innerHTML = `
+          <div class="card-bar" style="background:${gradients[w.condition]}"></div>
+          <div class="card-body">
+            <div class="card-top">
+              <div>
+                <div class="card-city">${w.city}</div>
+                <div class="card-country">${w.country}</div>
+              </div>
+              <div class="card-icon">${w.icon}</div>
+            </div>
+            <div class="card-temp">${fmt(w.temp)}</div>
+            <div class="card-condition">${w.condition}</div>
+            <div class="card-hilo"><span>H:${fmt(w.high)}</span><span>L:${fmt(w.low)}</span></div>
+          </div>`;
+        card.onclick = () => togglePanel(i);
+        grid.appendChild(card);
+      });
+    }
+
+    function togglePanel(i) {
+      const panel = document.getElementById('detailPanel');
+      const hint  = document.getElementById('hint');
+      if (selected === i) {
+        selected = null;
+        panel.classList.remove('show');
+        hint.style.display = 'block';
+        document.body.style.background = '#0d0d0d';
+      } else {
+        selected = i;
+        renderPanel(i);
+        panel.classList.remove('show');
+        void panel.offsetWidth; // restart animation
+        panel.classList.add('show');
+        hint.style.display = 'none';
+        const theme = tempTheme(cities[i].temp);
+        document.body.style.background = theme.bg;
+      }
+      renderCards();
+    }
+
+    function renderPanel(i) {
+      const w = cities[i];
+      const theme = tempTheme(w.temp);
+
+      document.getElementById('panelHeader').style.background = gradients[w.condition];
+      document.getElementById('panelCountry').textContent = `${w.country} · ${w.condition}`;
+      document.getElementById('panelCity').textContent    = w.city;
+      document.getElementById('panelIcon').textContent    = w.icon;
+      document.getElementById('panelTemp').textContent    = fmt(w.temp);
+      document.getElementById('panelTemp').style.color    = theme.text;
+      document.getElementById('panelFeels').textContent   = `Feels like ${fmt(w.feels)}`;
+
+      document.getElementById('statsGrid').innerHTML = [
+        { icon:"💧", label:"Humidity", value:`${w.humidity}%`   },
+        { icon:"💨", label:"Wind",     value:`${w.wind} km/h`   },
+        { icon:"🔺", label:"High",     value: fmt(w.high)       },
+        { icon:"🔻", label:"Low",      value: fmt(w.low)        },
+      ].map(s => `
+        <div class="stat-box">
+          <div class="stat-icon">${s.icon}</div>
+          <div class="stat-value" style="color:${theme.text}">${s.value}</div>
+          <div class="stat-label">${s.label}</div>
+        </div>`).join('');
+
+      document.getElementById('forecastGrid').innerHTML = w.forecast.map(f => `
+        <div class="forecast-chip">
+          <div class="fc-day">${f.day}</div>
+          <div class="fc-icon">${f.icon}</div>
+          <div class="fc-high">${fmt(f.high)}</div>
+          <div class="fc-low">${fmt(f.low)}</div>
+        </div>`).join('');
+    }
+
+    renderCards();
+  </script>
+</body>
+</html>
